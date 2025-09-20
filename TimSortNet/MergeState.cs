@@ -81,9 +81,9 @@ internal ref struct MergeState<T> : IDisposable
 
 		pa.CopyTo(TempA);
 		var dest = span;
-		pa = TempA;
+		pa = TempA[..na];
 
-		(dest, pb) = dest.CopyAndUpdate(pb, 1);
+		(dest, pb) = dest.CopyFromAndUpdate(pb, 1);
 
 		if (pb.Length == 0) return Succeed(dest, pa);
 		if (pa.Length == 1) return CopyB(dest, pa, pb);
@@ -103,7 +103,7 @@ internal ref struct MergeState<T> : IDisposable
 				var k = Comparer.IsLowerThan(pb[0], pa[0]);
 				if (k)
 				{
-					(dest, pb) = dest.CopyAndUpdate(pb, 1);
+					(dest, pb) = dest.CopyFromAndUpdate(pb, 1);
 
 					++bcount;
 					acount = 0;
@@ -113,7 +113,7 @@ internal ref struct MergeState<T> : IDisposable
 				}
 				else
 				{
-					(dest, pa) = dest.CopyAndUpdate(pa, 1);
+					(dest, pa) = dest.CopyFromAndUpdate(pa, 1);
 
 					++acount;
 					bcount = 0;
@@ -137,7 +137,7 @@ internal ref struct MergeState<T> : IDisposable
 				acount = k;
 				if (k > 0)
 				{
-					(dest, pa) = dest.CopyAndUpdate(pa, k);
+					(dest, pa) = dest.CopyFromAndUpdate(pa, k);
 
 					if (pa.Length == 1) return CopyB(dest, pa, pb);
 					/* na==0 is impossible now if the comparison
@@ -146,7 +146,7 @@ internal ref struct MergeState<T> : IDisposable
 					 */
 					if (pa.Length == 0) return Succeed(dest, pa);
 				}
-				(dest, pb) = dest.CopyAndUpdate(pb, 1);
+				(dest, pb) = dest.CopyFromAndUpdate(pb, 1);
 
 				if (pb.Length == 0) return Succeed(dest, pa);
 
@@ -154,13 +154,10 @@ internal ref struct MergeState<T> : IDisposable
 				bcount = k;
 				if (k > 0)
 				{
-					(dest, pb) = dest.CopyAndUpdate(pb, k);
+					(dest, pb) = dest.CopyFromAndUpdate(pb, k);
 					if (pb.Length == 0) return Succeed(dest, pa);
 				}
-				dest[0] = pa[0];
-				dest = dest[1..];
-				pa = pa[1..];
-
+				(dest, pa) = dest.CopyFromAndUpdate(pa, 1);
 
 				if (pa.Length == 1) return CopyB(dest, pa, pb);
 			} while (acount >= MIN_GALLOP || bcount >= MIN_GALLOP);
@@ -195,8 +192,9 @@ internal ref struct MergeState<T> : IDisposable
 		MergeGetMem(pb.Length);
 		var dest = span;
 		pb.CopyTo(TempA);
+		pb = TempA[..pb.Length];
 
-		(dest, pa) = dest.CopyBackAndUpdate(pa);
+		(dest, pa) = dest.CopyFromBackAndUpdate(pa);
 		if (pa.Length == 0) return Succeed(dest, pb);
 		if (pb.Length == 1) return CopyA(dest, pa, pb);
 
@@ -213,11 +211,11 @@ internal ref struct MergeState<T> : IDisposable
 			for (; ; )
 			{
 				Debug.Assert(pb.Length > 0 && pb.Length > 1);
-				var k = Comparer.IsLowerThan(pb[0], pa[0]);
+				var k = Comparer.IsLowerThan(pb[^1], pa[^1]);
 				if (k)
 				{
 
-					(dest, pa) = dest.CopyBackAndUpdate(pa);
+					(dest, pa) = dest.CopyFromBackAndUpdate(pa);
 
 					++acount;
 					bcount = 0;
@@ -227,7 +225,7 @@ internal ref struct MergeState<T> : IDisposable
 				}
 				else
 				{
-					(dest, pb) = dest.CopyBackAndUpdate(pb);
+					(dest, pb) = dest.CopyFromBackAndUpdate(pb);
 
 					++bcount;
 					acount = 0;
@@ -254,20 +252,20 @@ internal ref struct MergeState<T> : IDisposable
 				acount = k;
 				if (k > 0)
 				{
-					(dest, pa) = dest.CopyBackAndUpdate(pa, k);
+					(dest, pa) = dest.CopyFromBackAndUpdate(pa, k);
 
 					if (pa.Length == 0) return Succeed(dest, pb);
 				}
-				(dest, pb) = dest.CopyBackAndUpdate(pb);
+				(dest, pb) = dest.CopyFromBackAndUpdate(pb);
 				if (pb.Length == 1) return CopyA(dest, pa, pb);
 
-				k = TimSorter.GallopLeft(pa[pa.Length - 1], pb, pb.Length - 1, Comparer);
+				k = TimSorter.GallopLeft(pa[^1], pb, pb.Length - 1, Comparer);
 
 				k = pb.Length - k;
 				bcount = k;
 				if (k > 0)
 				{
-					(dest, pb) = dest.CopyBackAndUpdate(pb, k);
+					(dest, pb) = dest.CopyFromBackAndUpdate(pb, k);
 					if (pb.Length == 1)
 						return CopyA(dest, pa, pb);
 					/* nb==0 is impossible now if the comparison
@@ -277,7 +275,7 @@ internal ref struct MergeState<T> : IDisposable
 					if (pb.Length == 0)
 						return Succeed(dest, pb);
 				}
-				(dest, pa) = dest.CopyBackAndUpdate(pa);
+				(dest, pa) = dest.CopyFromBackAndUpdate(pa);
 				if (pa.Length == 0)
 					return Succeed(dest, pb);
 			} while (acount >= MIN_GALLOP || bcount >= MIN_GALLOP);
@@ -310,7 +308,7 @@ internal ref struct MergeState<T> : IDisposable
 		 */
 	private void MergeAt(Span<T> span, int i)
 	{
-		Debug.Assert(n > 2);
+		Debug.Assert(n >= 2);
 		Debug.Assert(i >= 0);
 		Debug.Assert(i == n - 2 || i == n - 3);
 
@@ -372,7 +370,7 @@ internal ref struct MergeState<T> : IDisposable
 			if (cn > 0 && p[cn - 1].Length <= p[cn].Length + p[cn + 1].Length)
 			{
 				if (p[cn - 1].Length < p[cn + 1].Length) cn--;
-				else MergeAt(span, cn);
+				MergeAt(span, cn);
 			}
 			else if (p[cn].Length <= p[cn + 1].Length) MergeAt(span, cn);
 			else break;

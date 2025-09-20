@@ -12,19 +12,19 @@ This project is code only, i.e. no nuget package will be available. To use it ju
 
 ## Benchmark
 
-| Method                   | N     | Mean           | Error       | StdDev      | Median         |
-|------------------------- |------ |---------------:|------------:|------------:|---------------:|
-| SystemArraySort          | 10    |       835.1 ns |    196.1 ns |    568.8 ns |       700.0 ns |
-| SystemArraySortIComparer | 10    |       684.4 ns |    249.2 ns |    719.0 ns |       300.0 ns |
-| TimSortIComparer         | 10    |     2,522.8 ns |    300.7 ns |    848.0 ns |     2,300.0 ns |
-| BinarySortIComparer      | 10    |     1,588.0 ns |    125.5 ns |    353.9 ns |     1,500.0 ns |
-| SystemArraySort          | 1000  |    21,468.4 ns |    429.3 ns |    933.3 ns |    21,400.0 ns |
-| SystemArraySortIComparer | 1000  |    20,260.6 ns |    407.4 ns |  1,101.3 ns |    19,950.0 ns |
-| TimSortIComparer         | 1000  |             NA |          NA |          NA |             NA |
-| BinarySortIComparer      | 1000  |   105,213.3 ns |  1,010.9 ns |    945.6 ns |   104,900.0 ns |
-| SystemArraySort          | 10000 |   394,371.4 ns |  2,263.1 ns |  2,006.2 ns |   394,100.0 ns |
-| SystemArraySortIComparer | 10000 |   395,130.8 ns |  3,450.9 ns |  2,881.7 ns |   394,600.0 ns |
-| TimSortIComparer         | 10000 |             NA |          NA |          NA |             NA |
-| BinarySortIComparer      | 10000 | 2,453,057.1 ns | 15,464.6 ns | 13,709.0 ns | 2,448,150.0 ns |
+| Method                   | N     | Mean           | Error        | StdDev      | Median         |
+|------------------------- |------ |---------------:|-------------:|------------:|---------------:|
+| SystemArraySort          | 10    |       409.7 ns |    120.90 ns |    343.0 ns |       300.0 ns |
+| SystemArraySortIComparer | 10    |       348.3 ns |     50.71 ns |    138.8 ns |       300.0 ns |
+| TimSortIComparer         | 10    |     1,862.8 ns |     97.01 ns |    263.9 ns |     1,800.0 ns |
+| BinarySortIComparer      | 10    |     1,340.2 ns |    144.81 ns |    408.4 ns |     1,200.0 ns |
+| SystemArraySort          | 1000  |    20,310.8 ns |    407.54 ns |  1,022.4 ns |    19,900.0 ns |
+| SystemArraySortIComparer | 1000  |    20,048.2 ns |    392.99 ns |    846.0 ns |    19,750.0 ns |
+| TimSortIComparer         | 1000  |   101,697.6 ns |  2,022.52 ns |  3,647.0 ns |   100,300.0 ns |
+| BinarySortIComparer      | 1000  |   104,769.2 ns |  1,323.98 ns |  1,105.6 ns |   104,400.0 ns |
+| SystemArraySort          | 10000 |   394,721.4 ns |  1,873.13 ns |  1,660.5 ns |   394,000.0 ns |
+| SystemArraySortIComparer | 10000 |   408,266.1 ns |  8,163.07 ns | 12,465.9 ns |   406,950.0 ns |
+| TimSortIComparer         | 10000 | 1,593,114.3 ns |  7,684.21 ns |  6,811.9 ns | 1,593,250.0 ns |
+| BinarySortIComparer      | 10000 | 2,460,208.3 ns | 29,610.96 ns | 23,118.3 ns | 2,446,850.0 ns |
 
-Apparently there are few bugs in implementation
+Apparently there are still few bugs in implementation

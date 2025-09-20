@@ -336,7 +336,7 @@ public class TimSorter
 			if (n < minrun)
 			{
 				var force = nremaining <= minrun ? nremaining : minrun;
-				BinarySort(span.Slice(lo, force), lo + n, comparer);
+				BinarySort(span.Slice(lo, force), n, comparer);
 				n = force;
 			}
 			/* Push run onto pending-runs stack, and maybe merge. */

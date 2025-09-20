@@ -12,24 +12,24 @@ internal static class Shared
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	internal static CopyContext<T> CopyAndUpdate<T>(this Span<T> dest, Span<T> src, int len)
+	internal static CopyContext<T> CopyFromAndUpdate<T>(this Span<T> dest, Span<T> src, int len)
 	{
 		src[..len].CopyTo(dest);
 		return new(dest[len..], src[len..]);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	internal static CopyContext<T> CopyBackAndUpdate<T>(this Span<T> dest, Span<T> src)
+	internal static CopyContext<T> CopyFromBackAndUpdate<T>(this Span<T> dest, Span<T> src)
 	{
 		dest[^1] = src[^1];
 		return new(dest[..^1], src[..^1]);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	internal static CopyContext<T> CopyBackAndUpdate<T>(this Span<T> dest, Span<T> src, int len)
+	internal static CopyContext<T> CopyFromBackAndUpdate<T>(this Span<T> dest, Span<T> src, int len)
 	{
 		src[^len..].CopyTo(dest[^len..]);
-		return new(dest[..len], src[..len]);
+		return new(dest[..^len], src[..^len]);
 	}
 
 	internal readonly ref struct CopyContext<T>

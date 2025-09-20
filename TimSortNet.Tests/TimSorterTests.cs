@@ -32,9 +32,9 @@ public class TimSorterTests
     [Test]
     public void BinarySortShouldSortComplexData()
     {
-        Span<int> span = [-624,-670,-471,-285,509,-171,-865,-831,199,431,-673,-709,-25,206,-613,-396,-513,989,-491,578,248,-837,-145,434,981,917,913,-398,114,-121,621,-206,-360,747,642,476,-926,815,-245,724,-571,-643];
-        
-        TimSorter.BinarySort(span, 0, Comparer<int>.Default );
+        Span<int> span = [-624, -670, -471, -285, 509, -171, -865, -831, 199, 431, -673, -709, -25, 206, -613, -396, -513, 989, -491, 578, 248, -837, -145, 434, 981, 917, 913, -398, 114, -121, 621, -206, -360, 747, 642, 476, -926, 815, -245, 724, -571, -643];
+
+        TimSorter.BinarySort(span, 0, Comparer<int>.Default);
         span.ToArray().Should().BeInAscendingOrder();
     }
 
@@ -125,13 +125,24 @@ public class TimSorterTests
         span.ToArray().Should().BeEquivalentTo([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 100, 100, 1209, 1209, 3000, 3000, 5000, 5000, 10000])
             .And.BeInAscendingOrder();
     }
-    
+
     [Test]
     public void SortShouldSortComplexData()
     {
-        Span<int> span = [-624,-670,-471,-285,509,-171,-865,-831,199,431,-673,-709,-25,206,-613,-396,-513,989,-491,578,248,-837,-145,434,981,917,913,-398,114,-121,621,-206,-360,747,642,476,-926,815,-245,724,-571,-643];
-        
+        Span<int> span = [-624, -670, -471, -285, 509, -171, -865, -831, 199, 431, -673, -709, -25, 206, -613, -396, -513, 989, -491, 578, 248, -837, -145, 434, 981, 917, 913, -398, 114, -121, 621, -206, -360, 747, 642, 476, -926, 815, -245, 724, -571, -643];
+
         TimSorter.Sort(span, Comparer<int>.Default, new TimSortConfig());
         span.ToArray().Should().BeInAscendingOrder();
+    }
+    
+    [Test]
+    public void SortShouldSortLongData()
+    {
+        int[] values = [.. Enumerable.Range(1, 1000)];
+        Random random = new(7);
+		random.Shuffle(values);
+        
+        TimSorter.Sort(values, Comparer<int>.Default, new TimSortConfig());
+        values.Should().BeInAscendingOrder();
     }
 }
