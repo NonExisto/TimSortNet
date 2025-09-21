@@ -4,9 +4,9 @@ namespace TimSortNet.Benchmarks;
 
 [MemoryDiagnoser(displayGenColumns: false)]
 [HideColumns("Job", "Error", "StdDev", "Median", "RatioSD", "y")]
-public class SortBenchmarks
+public class SemiSortBenchmarks
 {
-	[Params(10, 1000, 10000, 100000, 1000000)]
+	[Params(1000, 10000, 100000, 1000000)]
 	public int N;
 
 	public int[]? Values;
@@ -16,7 +16,14 @@ public class SortBenchmarks
 	{
 		Values = [.. Enumerable.Range(1, N)];
 		Random random = new(7);
-		random.Shuffle(Values);
+		Span<int> span = Values;
+
+		// this simulates mostly sorted array
+		var change = span.Slice(N >> 2, N >> 4);
+		random.Shuffle(change);
+
+		change = span.Slice(N >> 1, N >> 4);
+		random.Shuffle(change);
 	}
 
 	[Benchmark,]

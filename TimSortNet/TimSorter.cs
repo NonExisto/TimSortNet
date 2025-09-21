@@ -55,8 +55,7 @@ public class TimSorter
 				span[p] = span[p - 1];
 			}*/
 
-			var len = start - l;
-			span.Slice(l, len).CopyTo(span.Slice(l + 1, len));
+			span[l..start].CopyTo(span.Slice(l + 1, start - l));
 			span[l] = pivot;
 		}
 	}
@@ -76,8 +75,6 @@ public class TimSorter
 	"descending" is needed so that the caller can safely reverse a descending
 	sequence without violating stability (strict > ensures there are no equal
 	elements to get out of order).
-
-	Returns -1 in case of error.
 	*/
 	public static (int count, bool descending) CountRun<T>(Span<T> span, IComparer<T> comparer)
 	{
@@ -108,188 +105,6 @@ public class TimSorter
 		return (n, descending);
 	}
 
-	/*
-	Locate the proper position of key in a sorted vector; if the vector contains
-	an element equal to key, return the position immediately to the left of
-	the leftmost equal element.  [gallop_right() does the same except returns
-	the position to the right of the rightmost equal element (if any).]
-
-	"a" is a sorted vector with n elements, starting at a[0].  n must be > 0.
-
-	"hint" is an index at which to begin the search, 0 <= hint < n.  The closer
-	hint is to the final result, the faster this runs.
-
-	The return value is the int k in 0..n such that
-
-			a[k-1] < key <= a[k]
-
-	pretending that *(a-1) is minus infinity and a[n] is plus infinity.  IOW,
-	key belongs at index k; or, IOW, the first k elements of a should precede
-	key, and the last n-k should follow key.
-
-	Returns -1 on error.  See listsort.txt for info on the method.
-	*/
-	public static int GallopLeft<T>(T key, Span<T> span, int hint, IComparer<T> comparer)
-	{
-		Debug.Assert(hint >= 0 && hint < span.Length);
-		int a = hint;
-		int lastofs = 0;
-		int ofs = 1;
-		if (comparer.IsLowerThan(span[a], key))
-		{
-			/* a[hint] < key -- gallop right, until
-      * a[hint + lastofs] < key <= a[hint + ofs]
-      */
-			int maxofs = span.Length - hint;/* &a[n-1] is highest */
-			while (ofs < maxofs)
-			{
-				if (comparer.IsLowerThan(span[a + ofs], key))
-				{
-					lastofs = ofs;
-					ofs = (ofs << 1) + 1;
-					if (ofs <= 0)                   /* int overflow */
-						ofs = maxofs;
-				}
-				else                /* key <= a[hint + ofs] */
-					break;
-			}
-			if (ofs > maxofs)
-				ofs = maxofs;
-			/* Translate back to offsets relative to &a[0]. */
-			lastofs += hint;
-			ofs += hint;
-		}
-		else
-		{
-			/* key <= a[hint] -- gallop left, until
-         * a[hint - ofs] < key <= a[hint - lastofs]
-         */
-			int maxofs = hint + 1;             /* &a[0] is lowest */
-
-			while (ofs < maxofs)
-			{
-				if (comparer.IsLowerThan(span[a - ofs], key))
-					break;
-				/* key <= a[hint - ofs] */
-				lastofs = ofs;
-				ofs = (ofs << 1) + 1;
-				if (ofs <= 0)               /* int overflow */
-					ofs = maxofs;
-			}
-			if (ofs > maxofs)
-				ofs = maxofs;
-			/* Translate back to positive offsets relative to &a[0]. */
-			int k = lastofs;
-			lastofs = hint - ofs;
-			ofs = hint - k;
-		}
-		a -= hint;
-		Debug.Assert(-1 <= lastofs && lastofs < ofs && ofs <= span.Length);
-
-		++lastofs;
-		while (lastofs < ofs)
-		{
-			int m = lastofs + ((ofs - lastofs) >> 1);
-
-			if (comparer.IsLowerThan(span[a + m], key))
-				lastofs = m + 1;              /* a[m] < key */
-			else
-				ofs = m;                    /* key <= a[m] */
-		}
-		Debug.Assert(lastofs == ofs);
-
-		return ofs;
-	}
-
-	/*
-	Exactly like gallop_left(), except that if key already exists in a[0:n],
-	finds the position immediately to the right of the rightmost equal value.
-
-	The return value is the int k in 0..n such that
-
-			a[k-1] <= key < a[k]
-
-	or -1 if error.
-
-	The code duplication is massive, but this is enough different given that
-	we're sticking to "<" comparisons that it's much harder to follow if
-	written as one routine with yet another "left or right?" flag.
-	*/
-	public static int GallopRight<T>(T key, Span<T> span, int hint, IComparer<T> comparer)
-	{
-		Debug.Assert(hint >= 0 && hint < span.Length);
-		int a = hint;
-		int lastofs = 0;
-		int ofs = 1;
-		if (comparer.IsLowerThan(key, span[a]))
-		{
-			/* key < a[hint] -- gallop left, until
-      * a[hint - ofs] <= key < a[hint - lastofs]
-      */
-			int maxofs = hint + 1;             /* &a[0] is lowest */
-			while (ofs < maxofs)
-			{
-				if (comparer.IsLowerThan(key, span[a - ofs]))
-				{
-					lastofs = ofs;
-					ofs = (ofs << 1) + 1;
-					if (ofs <= 0)                   /* int overflow */
-						ofs = maxofs;
-				}
-				else                /* a[hint - ofs] <= key */
-					break;
-			}
-			if (ofs > maxofs)
-				ofs = maxofs;
-			/* Translate back to positive offsets relative to &a[0]. */
-			int k = lastofs;
-			lastofs = hint - ofs;
-			ofs = hint - k;
-		}
-		else
-		{
-			/* a[hint] <= key -- gallop right, until
-			 * a[hint + lastofs] <= key < a[hint + ofs]
-			*/
-			int maxofs = span.Length - hint;             /* &a[n-1] is highest */
-			while (ofs < maxofs)
-			{
-				if (comparer.IsLowerThan(key, span[a + ofs]))
-					break;
-				/* a[hint + ofs] <= key */
-				lastofs = ofs;
-				ofs = (ofs << 1) + 1;
-				if (ofs <= 0)               /* int overflow */
-					ofs = maxofs;
-			}
-			if (ofs > maxofs)
-				ofs = maxofs;
-			/* Translate back to offsets relative to &a[0]. */
-			lastofs += hint;
-			ofs += hint;
-		}
-		a -= hint;
-
-		Debug.Assert(-1 <= lastofs && lastofs < ofs && ofs <= span.Length);
-
-		/* Now a[lastofs] <= key < a[ofs], so key belongs somewhere to the
-     * right of lastofs but no farther right than ofs.  Do a binary
-     * search, with invariant a[lastofs-1] <= key < a[ofs].
-     */
-		++lastofs;
-		while (lastofs < ofs)
-		{
-			int m = lastofs + ((ofs - lastofs) >> 1);
-
-			if (comparer.IsLowerThan(key, span[a + m]))
-				ofs = m;                    /* key < a[m] */
-			else
-				lastofs = m + 1;              /* a[m] <= key */
-		}
-		Debug.Assert(lastofs == ofs);             /* so a[ofs-1] <= key < a[ofs] */
-		return ofs;
-	}
-
 	/* Compute a good value for the minimum run length; natural runs shorter
 	 * than this are boosted artificially via binary insertion.
 	 *
@@ -314,21 +129,18 @@ public class TimSorter
 	}
 
 /* An adaptive, stable, natural mergesort.  See listsort.txt.
- * Returns Py_None on success, NULL on error.  Even in case of error, the
- * list will be some permutation of its input state (nothing is lost or
- * duplicated).
  */
 	public static void Sort<T>(Span<T> span, IComparer<T> comparer, TimSortConfig config)
 	{
 		if (span.Length < 2) return;
 		using var ms = new MergeState<T>(comparer, config);
-		var minrun = MergeComputeMinRun(span.Length);
 		var nremaining = span.Length;
 		var lo = 0;
 		var hi = span.Length;
+		var minrun = MergeComputeMinRun(nremaining);
 		do
 		{
-			var (n, descending) = CountRun(span, comparer);
+			var (n, descending) = CountRun(span[lo..hi], comparer);
 			if (descending)
 			{
 				span.Slice(lo, n).Reverse();
@@ -340,17 +152,17 @@ public class TimSorter
 				n = force;
 			}
 			/* Push run onto pending-runs stack, and maybe merge. */
-			Debug.Assert(ms.n < config.MaxMergePending);
+			Debug.Assert(ms.N < config.MaxMergePending);
 			ms.AddPendingBlock(lo, n);
-			ms.MergeCollapse(span);
+			ms.MergeCollapse(in span);
 			/* Advance to find next run. */
 			lo += n;
 			nremaining -= n;
 		} while (nremaining > 0);
 
 		Debug.Assert(lo == hi);
-		ms.MergeForceCollapse(span);
-		Debug.Assert(ms.n == 1);
+		ms.MergeForceCollapse(in span);
+		Debug.Assert(ms.N == 1);
 		Debug.Assert(ms.CheckNoPendingLeft(span));
 	}
 }

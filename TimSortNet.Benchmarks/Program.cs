@@ -2,4 +2,4 @@
 using BenchmarkDotNet.Running;
 using TimSortNet.Benchmarks;
 
-var summary = BenchmarkRunner.Run<SortBenchmarks>();
+var summary = BenchmarkRunner.Run<SemiSortBenchmarks>();

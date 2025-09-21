@@ -12,19 +12,54 @@ This project is code only, i.e. no nuget package will be available. To use it ju
 
 ## Benchmark
 
-| Method                   | N     | Mean           | Error        | StdDev      | Median         |
-|------------------------- |------ |---------------:|-------------:|------------:|---------------:|
-| SystemArraySort          | 10    |       409.7 ns |    120.90 ns |    343.0 ns |       300.0 ns |
-| SystemArraySortIComparer | 10    |       348.3 ns |     50.71 ns |    138.8 ns |       300.0 ns |
-| TimSortIComparer         | 10    |     1,862.8 ns |     97.01 ns |    263.9 ns |     1,800.0 ns |
-| BinarySortIComparer      | 10    |     1,340.2 ns |    144.81 ns |    408.4 ns |     1,200.0 ns |
-| SystemArraySort          | 1000  |    20,310.8 ns |    407.54 ns |  1,022.4 ns |    19,900.0 ns |
-| SystemArraySortIComparer | 1000  |    20,048.2 ns |    392.99 ns |    846.0 ns |    19,750.0 ns |
-| TimSortIComparer         | 1000  |   101,697.6 ns |  2,022.52 ns |  3,647.0 ns |   100,300.0 ns |
-| BinarySortIComparer      | 1000  |   104,769.2 ns |  1,323.98 ns |  1,105.6 ns |   104,400.0 ns |
-| SystemArraySort          | 10000 |   394,721.4 ns |  1,873.13 ns |  1,660.5 ns |   394,000.0 ns |
-| SystemArraySortIComparer | 10000 |   408,266.1 ns |  8,163.07 ns | 12,465.9 ns |   406,950.0 ns |
-| TimSortIComparer         | 10000 | 1,593,114.3 ns |  7,684.21 ns |  6,811.9 ns | 1,593,250.0 ns |
-| BinarySortIComparer      | 10000 | 2,460,208.3 ns | 29,610.96 ns | 23,118.3 ns | 2,446,850.0 ns |
+BenchmarkDotNet v0.15.3, Windows 11 (10.0.22631.5768/23H2/2023Update/SunValley3)
+AMD Ryzen 7 PRO 4750U with Radeon Graphics 1.70GHz, 1 CPU, 16 logical and 8 physical cores
+.NET SDK 9.0.304
+  [Host]     : .NET 9.0.8 (9.0.8, 9.0.825.36511), X64 RyuJIT x86-64-v3
+  Job-CNUJVU : .NET 9.0.8 (9.0.8, 9.0.825.36511), X64 RyuJIT x86-64-v3
 
-Apparently there are still few bugs in implementation
+Job=Job-CNUJVU  InvocationCount=1  UnrollFactor=1
+
+| Method                   | N       | Mean                | Allocated |
+|------------------------- |-------- |--------------------:|----------:|
+| SystemArraySort          | 10      |            572.8 ns |         - |
+| SystemArraySortIComparer | 10      |            992.4 ns |         - |
+| TimSortIComparer         | 10      |          2,496.7 ns |    1752 B |
+| BinarySortIComparer      | 10      |          1,441.1 ns |         - |
+| SystemArraySort          | 1000    |         19,943.8 ns |         - |
+| SystemArraySortIComparer | 1000    |         21,618.6 ns |         - |
+| TimSortIComparer         | 1000    |        269,348.1 ns |    1752 B |
+| BinarySortIComparer      | 1000    |        105,585.0 ns |         - |
+| SystemArraySort          | 10000   |        390,971.4 ns |         - |
+| SystemArraySortIComparer | 10000   |        395,578.6 ns |         - |
+| TimSortIComparer         | 10000   |      2,065,449.5 ns |    1752 B |
+| BinarySortIComparer      | 10000   |      2,840,365.7 ns |         - |
+| SystemArraySort          | 100000  |      5,124,116.7 ns |         - |
+| SystemArraySortIComparer | 100000  |      4,985,600.0 ns |         - |
+| TimSortIComparer         | 100000  |     20,250,959.4 ns |    1752 B |
+| BinarySortIComparer      | 100000  |    226,261,342.9 ns |         - |
+| SystemArraySort          | 1000000 |     57,480,126.7 ns |         - |
+| SystemArraySortIComparer | 1000000 |     57,213,746.7 ns |         - |
+| TimSortIComparer         | 1000000 |    299,749,442.9 ns |    1752 B |
+| BinarySortIComparer      | 1000000 | 21,681,304,138.5 ns |         - |
+
+and for a partially sorted data
+
+| Method                   | N       | Mean           | Allocated |
+|------------------------- |-------- |---------------:|----------:|
+| SystemArraySort          | 1000    |       7.677 us |         - |
+| SystemArraySortIComparer | 1000    |       9.300 us |         - |
+| TimSortIComparer         | 1000    |      28.997 us |    1752 B |
+| BinarySortIComparer      | 1000    |      43.496 us |         - |
+| SystemArraySort          | 10000   |      81.515 us |         - |
+| SystemArraySortIComparer | 10000   |      82.246 us |         - |
+| TimSortIComparer         | 10000   |     374.659 us |    1752 B |
+| BinarySortIComparer      | 10000   |     417.871 us |         - |
+| SystemArraySort          | 100000  |   1,087.887 us |         - |
+| SystemArraySortIComparer | 100000  |   1,092.129 us |         - |
+| TimSortIComparer         | 100000  |   4,251.521 us |    1752 B |
+| BinarySortIComparer      | 100000  |   6,203.113 us |         - |
+| SystemArraySort          | 1000000 |  11,408.644 us |         - |
+| SystemArraySortIComparer | 1000000 |  11,253.833 us |         - |
+| TimSortIComparer         | 1000000 |  23,031.913 us |    1752 B |
+| BinarySortIComparer      | 1000000 | 227,929.431 us |         - |

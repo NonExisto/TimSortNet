@@ -27,7 +27,7 @@ internal ref struct MergeState<T> : IDisposable
      * so we could cut the storage for this, but it's a minor amount,
      * and keeping all the info explicit simplifies the code.
      */
-	internal int n;
+	internal int N;
 	private readonly PendingBlock[] Pending;
 
 	private struct PendingBlock
@@ -64,6 +64,188 @@ internal ref struct MergeState<T> : IDisposable
 
 		buffer = ArrayPool<T>.Shared.Rent(needed);
 		TempA = buffer;
+	}
+
+	/*
+	Locate the proper position of key in a sorted vector; if the vector contains
+	an element equal to key, return the position immediately to the left of
+	the leftmost equal element.  [gallop_right() does the same except returns
+	the position to the right of the rightmost equal element (if any).]
+
+	"a" is a sorted vector with n elements, starting at a[0].  n must be > 0.
+
+	"hint" is an index at which to begin the search, 0 <= hint < n.  The closer
+	hint is to the final result, the faster this runs.
+
+	The return value is the int k in 0..n such that
+
+			a[k-1] < key <= a[k]
+
+	pretending that *(a-1) is minus infinity and a[n] is plus infinity.  IOW,
+	key belongs at index k; or, IOW, the first k elements of a should precede
+	key, and the last n-k should follow key.
+
+	See listsort.txt for info on the method.
+	*/
+	private readonly int GallopLeft(T key, in Span<T> span, int hint)
+	{
+		Debug.Assert(hint >= 0 && hint < span.Length);
+		int a = hint;
+		int lastofs = 0;
+		int ofs = 1;
+		if (Comparer.IsLowerThan(span[a], key))
+		{
+			/* a[hint] < key -- gallop right, until
+      * a[hint + lastofs] < key <= a[hint + ofs]
+      */
+			int maxofs = span.Length - hint;/* &a[n-1] is highest */
+			while (ofs < maxofs)
+			{
+				if (Comparer.IsLowerThan(span[a + ofs], key))
+				{
+					lastofs = ofs;
+					ofs = (ofs << 1) + 1;
+					if (ofs <= 0)                   /* int overflow */
+						ofs = maxofs;
+				}
+				else                /* key <= a[hint + ofs] */
+					break;
+			}
+			if (ofs > maxofs)
+				ofs = maxofs;
+			/* Translate back to offsets relative to &a[0]. */
+			lastofs += hint;
+			ofs += hint;
+		}
+		else
+		{
+			/* key <= a[hint] -- gallop left, until
+         * a[hint - ofs] < key <= a[hint - lastofs]
+         */
+			int maxofs = hint + 1;             /* &a[0] is lowest */
+
+			while (ofs < maxofs)
+			{
+				if (Comparer.IsLowerThan(span[a - ofs], key))
+					break;
+				/* key <= a[hint - ofs] */
+				lastofs = ofs;
+				ofs = (ofs << 1) + 1;
+				if (ofs <= 0)               /* int overflow */
+					ofs = maxofs;
+			}
+			if (ofs > maxofs)
+				ofs = maxofs;
+			/* Translate back to positive offsets relative to &a[0]. */
+			int k = lastofs;
+			lastofs = hint - ofs;
+			ofs = hint - k;
+		}
+		a -= hint;
+		Debug.Assert(-1 <= lastofs && lastofs < ofs && ofs <= span.Length);
+
+		++lastofs;
+		while (lastofs < ofs)
+		{
+			int m = lastofs + ((ofs - lastofs) >> 1);
+
+			if (Comparer.IsLowerThan(span[a + m], key))
+				lastofs = m + 1;              /* a[m] < key */
+			else
+				ofs = m;                    /* key <= a[m] */
+		}
+		Debug.Assert(lastofs == ofs);
+
+		return ofs;
+	}
+
+	/*
+	Exactly like gallop_left(), except that if key already exists in a[0:n],
+	finds the position immediately to the right of the rightmost equal value.
+
+	The return value is the int k in 0..n such that
+
+			a[k-1] <= key < a[k]
+
+	or -1 if error.
+
+	The code duplication is massive, but this is enough different given that
+	we're sticking to "<" comparisons that it's much harder to follow if
+	written as one routine with yet another "left or right?" flag.
+	*/
+	private readonly int GallopRight(T key, in Span<T> span, int hint)
+	{
+		Debug.Assert(hint >= 0 && hint < span.Length);
+		int a = hint;
+		int lastofs = 0;
+		int ofs = 1;
+		if (Comparer.IsLowerThan(key, span[a]))
+		{
+			/* key < a[hint] -- gallop left, until
+      * a[hint - ofs] <= key < a[hint - lastofs]
+      */
+			int maxofs = hint + 1;             /* &a[0] is lowest */
+			while (ofs < maxofs)
+			{
+				if (Comparer.IsLowerThan(key, span[a - ofs]))
+				{
+					lastofs = ofs;
+					ofs = (ofs << 1) + 1;
+					if (ofs <= 0)                   /* int overflow */
+						ofs = maxofs;
+				}
+				else                /* a[hint - ofs] <= key */
+					break;
+			}
+			if (ofs > maxofs)
+				ofs = maxofs;
+			/* Translate back to positive offsets relative to &a[0]. */
+			int k = lastofs;
+			lastofs = hint - ofs;
+			ofs = hint - k;
+		}
+		else
+		{
+			/* a[hint] <= key -- gallop right, until
+			 * a[hint + lastofs] <= key < a[hint + ofs]
+			*/
+			int maxofs = span.Length - hint;             /* &a[n-1] is highest */
+			while (ofs < maxofs)
+			{
+				if (Comparer.IsLowerThan(key, span[a + ofs]))
+					break;
+				/* a[hint + ofs] <= key */
+				lastofs = ofs;
+				ofs = (ofs << 1) + 1;
+				if (ofs <= 0)               /* int overflow */
+					ofs = maxofs;
+			}
+			if (ofs > maxofs)
+				ofs = maxofs;
+			/* Translate back to offsets relative to &a[0]. */
+			lastofs += hint;
+			ofs += hint;
+		}
+		a -= hint;
+
+		Debug.Assert(-1 <= lastofs && lastofs < ofs && ofs <= span.Length);
+
+		/* Now a[lastofs] <= key < a[ofs], so key belongs somewhere to the
+     * right of lastofs but no farther right than ofs.  Do a binary
+     * search, with invariant a[lastofs-1] <= key < a[ofs].
+     */
+		++lastofs;
+		while (lastofs < ofs)
+		{
+			int m = lastofs + ((ofs - lastofs) >> 1);
+
+			if (Comparer.IsLowerThan(key, span[a + m]))
+				ofs = m;                    /* key < a[m] */
+			else
+				lastofs = m + 1;              /* a[m] <= key */
+		}
+		Debug.Assert(lastofs == ofs);             /* so a[ofs-1] <= key < a[ofs] */
+		return ofs;
 	}
 
 	/* Merge the na elements starting at pa with the nb elements starting at pb
@@ -133,7 +315,7 @@ internal ref struct MergeState<T> : IDisposable
 				Debug.Assert(pa.Length > 1 && pb.Length > 0);
 				min_gallop -= min_gallop > 1 ? 1 : 0;
 				MinGallop = min_gallop;
-				var k = TimSorter.GallopRight(pb[0], pa, 0, Comparer);
+				var k = GallopRight(pb[0], in pa, 0);
 				acount = k;
 				if (k > 0)
 				{
@@ -150,7 +332,7 @@ internal ref struct MergeState<T> : IDisposable
 
 				if (pb.Length == 0) return Succeed(dest, pa);
 
-				k = TimSorter.GallopLeft(pa[0], pb, 0, Comparer);
+				k = GallopLeft(pa[0], in pb, 0);
 				bcount = k;
 				if (k > 0)
 				{
@@ -246,7 +428,7 @@ internal ref struct MergeState<T> : IDisposable
 				Debug.Assert(pa.Length > 0 && pb.Length > 1);
 				min_gallop -= min_gallop > 1 ? 1 : 0;
 				MinGallop = min_gallop;
-				var k = TimSorter.GallopRight(pb[^1], pa, pa.Length - 1, Comparer);
+				var k = GallopRight(pb[^1], in pa, pa.Length - 1);
 
 				k = pa.Length - k;
 				acount = k;
@@ -259,7 +441,7 @@ internal ref struct MergeState<T> : IDisposable
 				(dest, pb) = dest.CopyFromBackAndUpdate(pb);
 				if (pb.Length == 1) return CopyA(dest, pa, pb);
 
-				k = TimSorter.GallopLeft(pa[^1], pb, pb.Length - 1, Comparer);
+				k = GallopLeft(pa[^1], in pb, pb.Length - 1);
 
 				k = pb.Length - k;
 				bcount = k;
@@ -304,14 +486,14 @@ internal ref struct MergeState<T> : IDisposable
 	}
 
 	/* Merge the two runs at stack indices i and i+1.
-		 * Returns 0 on success, -1 on error.
 		 */
-	private void MergeAt(Span<T> span, int i)
+	private void MergeAt(in Span<T> span, int i)
 	{
-		Debug.Assert(n >= 2);
+		Debug.Assert(N >= 2);
 		Debug.Assert(i >= 0);
-		Debug.Assert(i == n - 2 || i == n - 3);
+		Debug.Assert(i == N - 2 || i == N - 3);
 
+		var na = Pending[i].Offset;
 		var pa = span.Slice(Pending[i].Offset, Pending[i].Length);
 		var pb = span.Slice(Pending[i + 1].Offset, Pending[i + 1].Length);
 
@@ -321,32 +503,34 @@ internal ref struct MergeState<T> : IDisposable
      * in this merge).  The current run i+1 goes away in any case.
      */
 		Pending[i].Length = pa.Length + pb.Length;
-		if (i == n - 3)
+		if (i == N - 3)
 		{
-			span[i + 1] = span[i + 2];
+			Pending[i + 1] = Pending[i + 2];
 		}
-		n--;
-		var k = TimSorter.GallopRight(pb[0], pa, 0, Comparer);
-		pa = pa[k..];
+		N--;
+		var ka = GallopRight(pb[0], in pa, 0);
+		pa = pa[ka..];
+		na += ka;
 		if (pa.Length == 0) return;
 
 		/* Where does a end in b?  Elements in b after that can be
      * ignored (already in place).
      */
-		k = TimSorter.GallopLeft(pa[^1], pb, pb.Length - 1, Comparer);
-		if (k <= 0) return;
+		var kb = GallopLeft(pa[^1], in pb, pb.Length - 1);
+		if (kb <= 0) return;
+		pb = pb[..kb];
 
 		/* Merge what remains of the runs, using a temp array with
      * min(na, nb) elements.
      */
 
-		if (pa.Length <= k)
+		if (pa.Length <= pb.Length)
 		{
-			MergeLo(span.Slice(Pending[i].Offset, Pending[i].Length), pa.Length);
+			MergeLo(span.Slice(na, pa.Length + pb.Length), pa.Length);
 		}
 		else
 		{
-			MergeHi(span.Slice(Pending[i].Offset, Pending[i].Length), pa.Length);
+			MergeHi(span.Slice(na, pa.Length + pb.Length), pa.Length);
 		}
 	}
 
@@ -357,46 +541,42 @@ internal ref struct MergeState<T> : IDisposable
 	 * 2. len[-2] > len[-1]
 	 *
 	 * See listsort.txt for more info.
-	 *
-	 * Returns 0 on success, -1 on error.
 	 */
-	public void MergeCollapse(Span<T> span)
+	public void MergeCollapse(in Span<T> span)
 	{
 		PendingBlock[] p = Pending;
-		while (n > 1)
+		while (N > 1)
 		{
-			var cn = n - 2;
+			var n = N - 2;
 
-			if (cn > 0 && p[cn - 1].Length <= p[cn].Length + p[cn + 1].Length)
+			if (n > 0 && p[n - 1].Length <= p[n].Length + p[n + 1].Length)
 			{
-				if (p[cn - 1].Length < p[cn + 1].Length) cn--;
-				MergeAt(span, cn);
+				if (p[n - 1].Length < p[n + 1].Length) n--;
+				MergeAt(in span, n);
 			}
-			else if (p[cn].Length <= p[cn + 1].Length) MergeAt(span, cn);
+			else if (p[n].Length <= p[n + 1].Length) MergeAt(in span, n);
 			else break;
 		}
 	}
 
 	/* Regardless of invariants, merge all runs on the stack until only one
 	 * remains.  This is used at the end of the mergesort.
-	 *
-	 * Returns 0 on success, -1 on error.
 	 */
-	public void MergeForceCollapse(Span<T> span)
+	public void MergeForceCollapse(in Span<T> span)
 	{
 		PendingBlock[] p = Pending;
-		while (n > 1)
+		while (N > 1)
 		{
-			var cn = n - 2;
+			var cn = N - 2;
 			if (cn > 0 && p[cn - 1].Length < p[cn + 1].Length) cn--;
-			else MergeAt(span, cn);
+			else MergeAt(in span, cn);
 
 		}
 	}
 
 	public void AddPendingBlock(int offset, int length)
 	{
-		Pending[n++] = new MergeState<T>.PendingBlock(offset, length);
+		Pending[N++] = new MergeState<T>.PendingBlock(offset, length);
 	}
 
 	public void Dispose()

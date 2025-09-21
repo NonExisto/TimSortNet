@@ -1,5 +1,3 @@
-using System;
-
 namespace TimSortNet;
 
 public readonly ref struct TimSortConfig

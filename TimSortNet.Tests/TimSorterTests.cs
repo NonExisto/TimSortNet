@@ -134,13 +134,43 @@ public class TimSorterTests
         TimSorter.Sort(span, Comparer<int>.Default, new TimSortConfig());
         span.ToArray().Should().BeInAscendingOrder();
     }
-    
+
     [Test]
     public void SortShouldSortLongData()
     {
         int[] values = [.. Enumerable.Range(1, 1000)];
         Random random = new(7);
-		random.Shuffle(values);
+        random.Shuffle(values);
+
+        TimSorter.Sort(values, Comparer<int>.Default, new TimSortConfig());
+        values.Should().BeInAscendingOrder();
+    }
+
+    [Test]
+    public void BinarySortShouldSortLongData()
+    {
+        int[] values = [.. Enumerable.Range(1, 69)];
+        Random random = new(7);
+        random.Shuffle(values);
+
+        TimSorter.BinarySort(values, 0, Comparer<int>.Default);
+        values.Should().BeInAscendingOrder();
+    }
+    
+    [Test]
+    public void SortShouldSortSemisortedLongData()
+    {
+        const int N = 10000;
+        int[] values = [.. Enumerable.Range(1, N)];
+        Random random = new(7);
+		Span<int> span = values;
+
+		// this simulates mostly sorted array
+		var change = span.Slice(N >> 2, N >> 4);
+		random.Shuffle(change);
+
+		change = span.Slice(N >> 1, N >> 4);
+		random.Shuffle(change);
         
         TimSorter.Sort(values, Comparer<int>.Default, new TimSortConfig());
         values.Should().BeInAscendingOrder();
