@@ -20,46 +20,85 @@ AMD Ryzen 7 PRO 4750U with Radeon Graphics 1.70GHz, 1 CPU, 16 logical and 8 phys
 
 Job=Job-CNUJVU  InvocationCount=1  UnrollFactor=1
 
-| Method                   | N       | Mean                | Allocated |
-|------------------------- |-------- |--------------------:|----------:|
-| SystemArraySort          | 10      |            572.8 ns |         - |
-| SystemArraySortIComparer | 10      |            992.4 ns |         - |
-| TimSortIComparer         | 10      |          2,496.7 ns |    1752 B |
-| BinarySortIComparer      | 10      |          1,441.1 ns |         - |
-| SystemArraySort          | 1000    |         19,943.8 ns |         - |
-| SystemArraySortIComparer | 1000    |         21,618.6 ns |         - |
-| TimSortIComparer         | 1000    |        269,348.1 ns |    1752 B |
-| BinarySortIComparer      | 1000    |        105,585.0 ns |         - |
-| SystemArraySort          | 10000   |        390,971.4 ns |         - |
-| SystemArraySortIComparer | 10000   |        395,578.6 ns |         - |
-| TimSortIComparer         | 10000   |      2,065,449.5 ns |    1752 B |
-| BinarySortIComparer      | 10000   |      2,840,365.7 ns |         - |
-| SystemArraySort          | 100000  |      5,124,116.7 ns |         - |
-| SystemArraySortIComparer | 100000  |      4,985,600.0 ns |         - |
-| TimSortIComparer         | 100000  |     20,250,959.4 ns |    1752 B |
-| BinarySortIComparer      | 100000  |    226,261,342.9 ns |         - |
-| SystemArraySort          | 1000000 |     57,480,126.7 ns |         - |
-| SystemArraySortIComparer | 1000000 |     57,213,746.7 ns |         - |
-| TimSortIComparer         | 1000000 |    299,749,442.9 ns |    1752 B |
-| BinarySortIComparer      | 1000000 | 21,681,304,138.5 ns |         - |
+| Method                       | N       | Mean                | Allocated |
+|----------------------------- |-------- |--------------------:|----------:|
+| SystemArraySort              | 10      |            325.6 ns |         - |
+| SystemArraySortIComparer     | 10      |            365.5 ns |         - |
+| MemoryExtensionSortIComparer | 10      |            522.2 ns |         - |
+| TimSortIComparer             | 10      |          2,065.9 ns |    1752 B |
+| BinarySortIComparer          | 10      |          1,057.1 ns |         - |
+| SystemArraySort              | 1000    |         19,775.8 ns |         - |
+| SystemArraySortIComparer     | 1000    |         18,252.8 ns |         - |
+| MemoryExtensionSortIComparer | 1000    |         20,212.2 ns |         - |
+| TimSortIComparer             | 1000    |        266,848.8 ns |    1752 B |
+| BinarySortIComparer          | 1000    |        108,405.9 ns |         - |
+| SystemArraySort              | 10000   |        429,121.0 ns |         - |
+| SystemArraySortIComparer     | 10000   |        394,156.7 ns |         - |
+| MemoryExtensionSortIComparer | 10000   |        393,353.8 ns |         - |
+| TimSortIComparer             | 10000   |      3,307,592.3 ns |    1752 B |
+| BinarySortIComparer          | 10000   |      2,470,083.3 ns |         - |
+| SystemArraySort              | 100000  |      4,940,992.3 ns |         - |
+| SystemArraySortIComparer     | 100000  |      4,955,571.4 ns |         - |
+| MemoryExtensionSortIComparer | 100000  |      4,946,350.0 ns |         - |
+| TimSortIComparer             | 100000  |     19,469,292.3 ns |    1752 B |
+| BinarySortIComparer          | 100000  |    225,854,373.3 ns |         - |
+| SystemArraySort              | 1000000 |     57,438,061.5 ns |         - |
+| SystemArraySortIComparer     | 1000000 |     57,905,160.0 ns |         - |
+| MemoryExtensionSortIComparer | 1000000 |     58,013,900.0 ns |         - |
+| TimSortIComparer             | 1000000 |    295,801,023.1 ns |    1752 B |
+| BinarySortIComparer          | 1000000 | 21,790,511,513.3 ns |         - |
 
 and for a partially sorted data
 
-| Method                   | N       | Mean           | Allocated |
-|------------------------- |-------- |---------------:|----------:|
-| SystemArraySort          | 1000    |       7.677 us |         - |
-| SystemArraySortIComparer | 1000    |       9.300 us |         - |
-| TimSortIComparer         | 1000    |      28.997 us |    1752 B |
-| BinarySortIComparer      | 1000    |      43.496 us |         - |
-| SystemArraySort          | 10000   |      81.515 us |         - |
-| SystemArraySortIComparer | 10000   |      82.246 us |         - |
-| TimSortIComparer         | 10000   |     374.659 us |    1752 B |
-| BinarySortIComparer      | 10000   |     417.871 us |         - |
-| SystemArraySort          | 100000  |   1,087.887 us |         - |
-| SystemArraySortIComparer | 100000  |   1,092.129 us |         - |
-| TimSortIComparer         | 100000  |   4,251.521 us |    1752 B |
-| BinarySortIComparer      | 100000  |   6,203.113 us |         - |
-| SystemArraySort          | 1000000 |  11,408.644 us |         - |
-| SystemArraySortIComparer | 1000000 |  11,253.833 us |         - |
-| TimSortIComparer         | 1000000 |  23,031.913 us |    1752 B |
-| BinarySortIComparer      | 1000000 | 227,929.431 us |         - |
+| Method                       | N       | Mean           | Allocated |
+|----------------------------- |-------- |---------------:|----------:|
+| SystemArraySort              | 1000    |       5.610 us |         - |
+| SystemArraySortIComparer     | 1000    |       5.909 us |         - |
+| SystemArraySortDelegate      | 1000    |      23.442 us |         - |
+| MemoryExtensionSortIComparer | 1000    |       5.193 us |         - |
+| TimSortIComparer             | 1000    |      30.583 us |    1776 B |
+| BinarySortIComparer          | 1000    |      42.588 us |      24 B |
+| SystemArraySort              | 10000   |      81.927 us |         - |
+| SystemArraySortIComparer     | 10000   |      77.850 us |         - |
+| SystemArraySortDelegate      | 10000   |     287.421 us |         - |
+| MemoryExtensionSortIComparer | 10000   |      82.383 us |         - |
+| TimSortIComparer             | 10000   |     388.361 us |    1776 B |
+| BinarySortIComparer          | 10000   |     407.393 us |      24 B |
+| SystemArraySort              | 100000  |   1,093.593 us |         - |
+| SystemArraySortIComparer     | 100000  |   1,098.877 us |         - |
+| SystemArraySortDelegate      | 100000  |   3,632.187 us |         - |
+| MemoryExtensionSortIComparer | 100000  |   1,098.286 us |         - |
+| TimSortIComparer             | 100000  |   4,482.308 us |    1776 B |
+| BinarySortIComparer          | 100000  |   5,895.523 us |      24 B |
+| SystemArraySort              | 1000000 |  11,415.228 us |         - |
+| SystemArraySortIComparer     | 1000000 |  13,211.485 us |         - |
+| SystemArraySortDelegate      | 1000000 |  15,337.600 us |         - |
+| MemoryExtensionSortIComparer | 1000000 |  11,429.748 us |         - |
+| TimSortIComparer             | 1000000 |  22,436.147 us |    1776 B |
+| BinarySortIComparer          | 1000000 | 215,349.507 us |      24 B |
+
+### Note on IComparer performance
+As we all aware calling interface method is very expensive in such very tight loops. But somehow .net Comparer&lt;int&gt;.Default overcome that. Here is partially sorted benchmark with manually written comparer which was unable to devirtuallize interface call:
+
+| Method                       | N       | Mean           | Allocated |
+|----------------------------- |-------- |---------------:|----------:|
+| SystemArraySort              | 1000    |       5.300 us |         - |
+| SystemArraySortIComparer     | 1000    |      21.364 us |      64 B |
+| MemoryExtensionSortIComparer | 1000    |      19.919 us |      64 B |
+| TimSortIComparer             | 1000    |      32.038 us |    1752 B |
+| BinarySortIComparer          | 1000    |      40.932 us |         - |
+| SystemArraySort              | 10000   |      81.792 us |         - |
+| SystemArraySortIComparer     | 10000   |     321.851 us |      64 B |
+| MemoryExtensionSortIComparer | 10000   |     288.538 us |      64 B |
+| TimSortIComparer             | 10000   |     393.447 us |    1752 B |
+| BinarySortIComparer          | 10000   |     399.864 us |         - |
+| SystemArraySort              | 100000  |   1,083.958 us |         - |
+| SystemArraySortIComparer     | 100000  |   3,596.538 us |      64 B |
+| MemoryExtensionSortIComparer | 100000  |   3,591.223 us |      64 B |
+| TimSortIComparer             | 100000  |   4,442.471 us |    1752 B |
+| BinarySortIComparer          | 100000  |   5,904.150 us |         - |
+| SystemArraySort              | 1000000 |  13,334.067 us |         - |
+| SystemArraySortIComparer     | 1000000 |  14,546.300 us |      64 B |
+| MemoryExtensionSortIComparer | 1000000 |  14,648.573 us |      64 B |
+| TimSortIComparer             | 1000000 |  21,778.414 us |    1752 B |
+| BinarySortIComparer          | 1000000 | 218,587.614 us |         - |

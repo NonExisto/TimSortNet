@@ -3,9 +3,9 @@ using System.Diagnostics;
 
 namespace TimSortNet;
 
-internal ref struct MergeState<T> : IDisposable
+internal ref struct MergeState<T, TCompare> : IDisposable where TCompare : IComparer<T>
 {
-	public readonly IComparer<T> Comparer;
+	public readonly TCompare Comparer;
 	/* This controls when we get *into* galloping mode.  It's initialized
      * to MIN_GALLOP.  merge_lo and merge_hi tend to nudge it higher for
      * random data, and lower for highly structured data.
@@ -30,23 +30,12 @@ internal ref struct MergeState<T> : IDisposable
 	internal int N;
 	private readonly PendingBlock[] Pending;
 
-	private struct PendingBlock
-	{
-		public int Offset;
-
-		public int Length;
-
-		public PendingBlock(int offset, int length) : this()
-		{
-			Offset = offset;
-			Length = length;
-		}
-	}
+	
 
 	/* 'a' points to this when possible, rather than muck with malloc. */
 	private readonly Span<T> temparray;
 
-	public MergeState(IComparer<T> comparer, TimSortConfig config)
+	public MergeState(TCompare comparer, TimSortConfig config)
 	{
 		Comparer = comparer;
 		MIN_GALLOP = MinGallop = config.MinGallop;
@@ -576,7 +565,7 @@ internal ref struct MergeState<T> : IDisposable
 
 	public void AddPendingBlock(int offset, int length)
 	{
-		Pending[N++] = new MergeState<T>.PendingBlock(offset, length);
+		Pending[N++] = new PendingBlock(offset, length);
 	}
 
 	public void Dispose()

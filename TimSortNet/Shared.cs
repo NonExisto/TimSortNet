@@ -5,7 +5,7 @@ namespace TimSortNet;
 internal static class Shared
 {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	internal static bool IsLowerThan<T>(this IComparer<T> comparer, T x, T y)
+	internal static bool IsLowerThan<T, TComparer>(this TComparer comparer, T x, T y) where TComparer : IComparer<T>
 	{
 		ArgumentNullException.ThrowIfNull(comparer);
 		return comparer.Compare(x, y) <= 0;
