@@ -52,30 +52,30 @@ and for a partially sorted data
 
 | Method                       | N       | Mean           | Allocated |
 |----------------------------- |-------- |---------------:|----------:|
-| SystemArraySort              | 1000    |       5.610 us |         - |
-| SystemArraySortIComparer     | 1000    |       5.909 us |         - |
-| SystemArraySortDelegate      | 1000    |      23.442 us |         - |
-| MemoryExtensionSortIComparer | 1000    |       5.193 us |         - |
-| TimSortIComparer             | 1000    |      30.583 us |    1776 B |
-| BinarySortIComparer          | 1000    |      42.588 us |      24 B |
-| SystemArraySort              | 10000   |      81.927 us |         - |
-| SystemArraySortIComparer     | 10000   |      77.850 us |         - |
-| SystemArraySortDelegate      | 10000   |     287.421 us |         - |
-| MemoryExtensionSortIComparer | 10000   |      82.383 us |         - |
-| TimSortIComparer             | 10000   |     388.361 us |    1776 B |
-| BinarySortIComparer          | 10000   |     407.393 us |      24 B |
-| SystemArraySort              | 100000  |   1,093.593 us |         - |
-| SystemArraySortIComparer     | 100000  |   1,098.877 us |         - |
-| SystemArraySortDelegate      | 100000  |   3,632.187 us |         - |
-| MemoryExtensionSortIComparer | 100000  |   1,098.286 us |         - |
-| TimSortIComparer             | 100000  |   4,482.308 us |    1776 B |
-| BinarySortIComparer          | 100000  |   5,895.523 us |      24 B |
-| SystemArraySort              | 1000000 |  11,415.228 us |         - |
-| SystemArraySortIComparer     | 1000000 |  13,211.485 us |         - |
-| SystemArraySortDelegate      | 1000000 |  15,337.600 us |         - |
-| MemoryExtensionSortIComparer | 1000000 |  11,429.748 us |         - |
-| TimSortIComparer             | 1000000 |  22,436.147 us |    1776 B |
-| BinarySortIComparer          | 1000000 | 215,349.507 us |      24 B |
+| SystemArraySort              | 1000    |       5.960 us |         - |
+| SystemArraySortIComparer     | 1000    |       6.195 us |         - |
+| SystemArraySortDelegate      | 1000    |      23.470 us |         - |
+| MemoryExtensionSortIComparer | 1000    |       6.223 us |         - |
+| TimSortIComparer             | 1000    |      29.553 us |    1752 B |
+| BinarySortIComparer          | 1000    |      44.329 us |         - |
+| SystemArraySort              | 10000   |      83.106 us |         - |
+| SystemArraySortIComparer     | 10000   |      82.893 us |         - |
+| SystemArraySortDelegate      | 10000   |     287.443 us |         - |
+| MemoryExtensionSortIComparer | 10000   |      82.800 us |         - |
+| TimSortIComparer             | 10000   |     385.664 us |    1752 B |
+| BinarySortIComparer          | 10000   |     422.180 us |         - |
+| SystemArraySort              | 100000  |   1,092.792 us |         - |
+| SystemArraySortIComparer     | 100000  |   1,091.610 us |         - |
+| SystemArraySortDelegate      | 100000  |   2,204.227 us |         - |
+| MemoryExtensionSortIComparer | 100000  |   1,120.306 us |         - |
+| TimSortIComparer             | 100000  |   2,684.499 us |    1752 B |
+| BinarySortIComparer          | 100000  |   6,270.922 us |         - |
+| SystemArraySort              | 1000000 |  13,118.688 us |         - |
+| SystemArraySortIComparer     | 1000000 |  11,452.323 us |         - |
+| SystemArraySortDelegate      | 1000000 |  14,770.843 us |         - |
+| MemoryExtensionSortIComparer | 1000000 |  13,240.150 us |         - |
+| TimSortIComparer             | 1000000 |  26,250.633 us |    1752 B |
+| BinarySortIComparer          | 1000000 | 231,492.564 us |         - |
 
 ### Note on IComparer performance
 As we all aware calling interface method is very expensive in such very tight loops. But somehow .net Comparer&lt;int&gt;.Default overcome that. Here is partially sorted benchmark with manually written comparer which was unable to devirtuallize interface call:

@@ -558,7 +558,7 @@ internal ref struct MergeState<T, TCompare> : IDisposable where TCompare : IComp
 		{
 			var cn = N - 2;
 			if (cn > 0 && p[cn - 1].Length < p[cn + 1].Length) cn--;
-			else MergeAt(in span, cn);
+			MergeAt(in span, cn);
 
 		}
 	}

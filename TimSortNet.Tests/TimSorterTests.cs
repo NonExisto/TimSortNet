@@ -142,7 +142,7 @@ public class TimSorterTests
         Random random = new(7);
         random.Shuffle(values);
 
-        TimSorter.Sort(values, Comparer<int>.Default, new TimSortConfig());
+        TimSorter.Sort(values.AsSpan(), Comparer<int>.Default, new TimSortConfig());
         values.Should().BeInAscendingOrder();
     }
 
@@ -153,7 +153,7 @@ public class TimSorterTests
         Random random = new(7);
         random.Shuffle(values);
 
-        TimSorter.BinarySort(values, 0, Comparer<int>.Default);
+        TimSorter.BinarySort(values.AsSpan(), 0, Comparer<int>.Default);
         values.Should().BeInAscendingOrder();
     }
     
@@ -172,7 +172,7 @@ public class TimSorterTests
 		change = span.Slice(N >> 1, N >> 4);
 		random.Shuffle(change);
         
-        TimSorter.Sort(values, Comparer<int>.Default, new TimSortConfig());
+        TimSorter.Sort(values.AsSpan(), Comparer<int>.Default, new TimSortConfig());
         values.Should().BeInAscendingOrder();
     }
 }

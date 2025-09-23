@@ -20,7 +20,7 @@ public class TimSorter
 	public static void BinarySort<T, TComparer>(Span<T> span, int start, TComparer comparer)
 		where TComparer : IComparer<T>
 	{
-		Debug.Assert(start >= 0 && start < span.Length);
+		if (start < 0 || start >= span.Length) throw new ArgumentOutOfRangeException(nameof(start));
 		if (start == 0) start++;
 		for (; start < span.Length; start++)
 		{
@@ -136,7 +136,7 @@ public class TimSorter
 	/// An adaptive, stable, natural mergesort.  See listsort.txt.
 	/// </summary>
 	public static void Sort<T, TComparer>(Span<T> span, TComparer comparer, TimSortConfig config)
-		where TComparer: IComparer<T>
+		where TComparer : IComparer<T>
 	{
 		if (span.Length < 2) return;
 		using var ms = new MergeState<T, TComparer>(comparer, config);
@@ -155,6 +155,7 @@ public class TimSorter
 			{
 				var force = nremaining <= minrun ? nremaining : minrun;
 				BinarySort(span.Slice(lo, force), n, comparer);
+				//MemoryExtensions.Sort(span.Slice(lo, force), comparer);
 				n = force;
 			}
 			/* Push run onto pending-runs stack, and maybe merge. */

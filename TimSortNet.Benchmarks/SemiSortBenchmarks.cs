@@ -39,10 +39,10 @@ public class SemiSortBenchmarks
 	public void MemoryExtensionSortIComparer() => MemoryExtensions.Sort<int, Comparer<int>>(Values!, Comparer<int>.Default);
 
 	[Benchmark]
-	public void TimSortIComparer() => TimSorter.Sort<int, IntComparer>(Values!, new IntComparer(), new TimSortConfig());
+	public void TimSortIComparer() => TimSorter.Sort<int, Comparer<int>>(Values!, Comparer<int>.Default, new TimSortConfig());
 
 	[Benchmark]
-	public void BinarySortIComparer() => TimSorter.BinarySort<int, IntComparer>(Values!, 0, new IntComparer());
+	public void BinarySortIComparer() => TimSorter.BinarySort<int, Comparer<int>>(Values!, 0, Comparer<int>.Default);
 }
 
 
