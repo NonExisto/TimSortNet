@@ -8,7 +8,7 @@ http://svn.python.org/projects/python/trunk/Objects/listobject.c
 Most relevant code comments are copied as is. They are referencing documentation at http://svn.python.org/projects/python/trunk/Objects/listsort.txt
 
 ## Usage
-This project is code only, i.e. no nuget package will be available. To use it just clone it to your local machine and reference existing project from you current working solution. I really like Rust development approach on code reuse
+This project is code only or academic purpose only so to say, i.e. no nuget package will be available. To use it just clone it to your local machine and reference existing project from you current working solution. I really like Rust development approach on code reuse
 
 ## Benchmark
 
@@ -77,8 +77,76 @@ and for a partially sorted data
 | TimSortIComparer             | 1000000 |  26,250.633 us |    1752 B |
 | BinarySortIComparer          | 1000000 | 231,492.564 us |         - |
 
-### Note on IComparer performance
-As we all aware calling interface method is very expensive in such very tight loops. But somehow .net Comparer&lt;int&gt;.Default overcome that. Here is partially sorted benchmark with manually written comparer which was unable to devirtuallize interface call:
+
+### .net 10 release update
+
+BenchmarkDotNet v0.15.7, Windows 11 (10.0.26200.6584/25H2/2025Update/HudsonValley2)
+AMD Ryzen 7 PRO 4750U with Radeon Graphics 1.70GHz, 1 CPU, 16 logical and 8 physical cores
+.NET SDK 10.0.100
+  [Host]     : .NET 10.0.0 (10.0.0, 10.0.25.52411), X64 RyuJIT x86-64-v3
+  Job-CNUJVU : .NET 10.0.0 (10.0.0, 10.0.25.52411), X64 RyuJIT x86-64-v3
+
+Job=Job-CNUJVU  InvocationCount=1  UnrollFactor=1
+
+| Method                       | N       | Mean                | Allocated |
+|----------------------------- |-------- |--------------------:|----------:|
+| SystemArraySort              | 10      |            378.7 ns |         - |
+| SystemArraySortIComparer     | 10      |            652.7 ns |         - |
+| MemoryExtensionSortIComparer | 10      |            401.1 ns |         - |
+| TimSortIComparer             | 10      |          2,037.9 ns |    1752 B |
+| BinarySortIComparer          | 10      |          1,319.1 ns |         - |
+| SystemArraySort              | 1000    |         20,366.9 ns |         - |
+| SystemArraySortIComparer     | 1000    |         29,283.0 ns |         - |
+| MemoryExtensionSortIComparer | 1000    |         21,209.1 ns |         - |
+| TimSortIComparer             | 1000    |        279,142.0 ns |    1752 B |
+| BinarySortIComparer          | 1000    |        103,857.1 ns |         - |
+| SystemArraySort              | 10000   |        384,733.3 ns |         - |
+| SystemArraySortIComparer     | 10000   |        385,707.7 ns |         - |
+| MemoryExtensionSortIComparer | 10000   |        385,269.2 ns |         - |
+| TimSortIComparer             | 10000   |      3,359,846.7 ns |    1752 B |
+| BinarySortIComparer          | 10000   |      2,436,957.1 ns |         - |
+| SystemArraySort              | 100000  |      4,777,478.6 ns |         - |
+| SystemArraySortIComparer     | 100000  |      4,770,915.4 ns |         - |
+| MemoryExtensionSortIComparer | 100000  |      4,770,753.8 ns |         - |
+| TimSortIComparer             | 100000  |     14,060,415.4 ns |    1752 B |
+| BinarySortIComparer          | 100000  |    231,653,592.9 ns |         - |
+| SystemArraySort              | 1000000 |     57,328,173.3 ns |         - |
+| SystemArraySortIComparer     | 1000000 |     57,109,975.0 ns |         - |
+| MemoryExtensionSortIComparer | 1000000 |     58,963,000.0 ns |         - |
+| TimSortIComparer             | 1000000 |    169,115,657.1 ns |    1752 B |
+| BinarySortIComparer          | 1000000 | 22,137,199,943.3 ns |         - |
+
+and for a partially sorted data
+
+| Method                       | N       | Mean           | Allocated |
+|----------------------------- |-------- |---------------:|----------:|
+| SystemArraySort              | 1000    |       6.891 us |         - |
+| SystemArraySortIComparer     | 1000    |       6.727 us |         - |
+| SystemArraySortDelegate      | 1000    |      20.787 us |         - |
+| MemoryExtensionSortIComparer | 1000    |       6.095 us |         - |
+| TimSortIComparer             | 1000    |      29.753 us |    1752 B |
+| BinarySortIComparer          | 1000    |      48.037 us |         - |
+| SystemArraySort              | 10000   |      99.090 us |         - |
+| SystemArraySortIComparer     | 10000   |      99.338 us |         - |
+| SystemArraySortDelegate      | 10000   |     284.120 us |         - |
+| MemoryExtensionSortIComparer | 10000   |      87.378 us |         - |
+| TimSortIComparer             | 10000   |     417.440 us |    1752 B |
+| BinarySortIComparer          | 10000   |     376.223 us |         - |
+| SystemArraySort              | 100000  |   1,074.347 us |         - |
+| SystemArraySortIComparer     | 100000  |   1,177.171 us |         - |
+| SystemArraySortDelegate      | 100000  |   3,656.075 us |         - |
+| MemoryExtensionSortIComparer | 100000  |   1,110.842 us |         - |
+| TimSortIComparer             | 100000  |   2,980.699 us |    1752 B |
+| BinarySortIComparer          | 100000  |   6,399.819 us |         - |
+| SystemArraySort              | 1000000 |  12,237.862 us |         - |
+| SystemArraySortIComparer     | 1000000 |  12,853.188 us |         - |
+| SystemArraySortDelegate      | 1000000 |  14,655.519 us |         - |
+| MemoryExtensionSortIComparer | 1000000 |  11,977.714 us |         - |
+| TimSortIComparer             | 1000000 |  17,930.187 us |    1752 B |
+| BinarySortIComparer          | 1000000 | 220,074.133 us |         - |
+
+### Note on IComparer performance 
+As we all aware calling interface method is very expensive in such very tight loops. But somehow .net Comparer&lt;int&gt;.Default overcome that. Here is partially sorted benchmark with manually written comparer which was unable to devirtuallize interface call (still .net 9):
 
 | Method                       | N       | Mean           | Allocated |
 |----------------------------- |-------- |---------------:|----------:|

@@ -20,7 +20,10 @@ public class TimSorter
 	public static void BinarySort<T, TComparer>(Span<T> span, int start, TComparer comparer)
 		where TComparer : IComparer<T>
 	{
-		if (start < 0 || start >= span.Length) throw new ArgumentOutOfRangeException(nameof(start));
+		if (start < 0 || start > span.Length) 
+		{
+			throw new ArgumentOutOfRangeException(nameof(start), $"Parameter should be within span's range, but {start} dot not belong to [0 - {span.Length}]");
+		}
 		if (start == 0) start++;
 		for (; start < span.Length; start++)
 		{

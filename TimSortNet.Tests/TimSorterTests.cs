@@ -136,9 +136,10 @@ public class TimSorterTests
     }
 
     [Test]
-    public void SortShouldSortLongData()
+    [Arguments(10),Arguments(100),Arguments(1000), Arguments(10_000),Arguments(100_000),Arguments(1_000_000)]
+    public void SortShouldSortLongData(int N)
     {
-        int[] values = [.. Enumerable.Range(1, 1000)];
+        int[] values = [.. Enumerable.Range(1, N)];
         Random random = new(7);
         random.Shuffle(values);
 

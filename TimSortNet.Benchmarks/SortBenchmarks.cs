@@ -6,7 +6,7 @@ namespace TimSortNet.Benchmarks;
 [HideColumns("Job", "Error", "StdDev", "Median", "RatioSD", "y")]
 public class SortBenchmarks
 {
-	[Params(10, 1000, 10000, 100000, 1000000)]
+	[Params(10, 1000, 10_000, 100_000, 1_000_000)]
 	public int N;
 
 	public int[]? Values;
@@ -26,13 +26,13 @@ public class SortBenchmarks
 	public void SystemArraySortIComparer() => Array.Sort(Values!, Comparer<int>.Default);
 
 	[Benchmark]
-	public void MemoryExtensionSortIComparer() => MemoryExtensions.Sort<int, Comparer<int>>(Values!, Comparer<int>.Default);
+	public void MemoryExtensionSortIComparer() => MemoryExtensions.Sort(Values, Comparer<int>.Default);
 
 	[Benchmark]
-	public void TimSortIComparer() => TimSorter.Sort<int, Comparer<int>>(Values!, Comparer<int>.Default, new TimSortConfig());
+	public void TimSortIComparer() => TimSorter.Sort(Values!, Comparer<int>.Default, new TimSortConfig());
 
 	[Benchmark]
-	public void BinarySortIComparer() => TimSorter.BinarySort<int, Comparer<int>>(Values!, 0, Comparer<int>.Default);
+	public void BinarySortIComparer() => TimSorter.BinarySort(Values!, 0, Comparer<int>.Default);
 }
 
 
